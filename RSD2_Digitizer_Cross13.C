@@ -227,10 +227,11 @@ void RSD2_Digitizer_Cross13::Begin(TTree * /*tree*/)
       DCTimeLow  = 10;
       DCTimeHigh = 60;
 
-      TDelay[3] = 0.;
-      TDelay[4] = 0.;
-      TDelay[5] = 0.;
-      TDelay[6] = 0.;
+      TDelay[1] = 5.557302422353908;
+      TDelay[2] = 5.412929484946022;
+      TDelay[3] = 5.888555319756881;
+      TDelay[4] = 5.461670658289696;
+
  
    }
      

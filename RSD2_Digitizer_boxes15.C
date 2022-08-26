@@ -37,8 +37,9 @@ void RSD2_Digitizer_boxes15::Begin(TTree * /*tree*/)
 
 
   // 0 = All; 1 = bottom box; 2 = Top box; 3 Top & Bottom Box, 4 Small box // ==5 New data taking (run >= 33)
-  // = 6 timing
-   NBox = 6; 
+  // = 6 timing 
+  // == 7 W3 data
+   NBox = 7; 
 
 
    /* = 1 use correction LTSPICE 
@@ -49,7 +50,7 @@ void RSD2_Digitizer_boxes15::Begin(TTree * /*tree*/)
       = 12 show correction Data without using it;
    */
 
-   Correction = 11;
+   Correction = 0;
 
    RunNumber = 300; // == 0 for run 30,31,32,33,34,35,37,38. Put bias for run 36 (225, 250, 275,300,330)
 
@@ -215,16 +216,13 @@ void RSD2_Digitizer_boxes15::Begin(TTree * /*tree*/)
        
      }
   
-   else if (NBox == 6)
-     {
+   else if (NBox == 6){
 
-       MaxDim  = 500;
-       for(a=1;a<16;a++)
-	 {
-	   XPa[a] = 0.;
-	   YPa[a] = 0;
-	   
-	 }
+    MaxDim  = 500;
+    for(a=1;a<16;a++){
+      XPa[a] = 0.;
+      YPa[a] = 0;
+    }
           // new data
    //dcchannel - 0
 
@@ -238,48 +236,103 @@ void RSD2_Digitizer_boxes15::Begin(TTree * /*tree*/)
        TDelay[7] = 0.95;
        TDelay[8] = 0.340;
        
-       Xp2 = 6;
-       Xp1 = 8;
 
- 
-       Xm2 = 7;
-       Xm1 = 5;
+       Ym1 = 6;
+       Xm1 = 6;
 
-       Yp1 = 7;
-       Yp2 = 6;
-       Ym1 = 5;
-       Ym2 = 8;
+       Xp1 = 7;
+       Ym2 = 7;
 
-       
-       
+       Xm2 = 5;
+       Yp1 = 5;
+
+       Xp2 = 8;
+       Yp2 = 8;
 
        DCTimeLow = 22;
-       DCTimeHigh = 32;
+       DCTimeHigh = 60;
 
        XPa[Xm1] = 0.1;
-       XPa[Xm2] = 0.1;
-
-       XPa[Xp1] = 330;
-       XPa[Xp2] = 330;
-
        YPa[Ym1] = 0.1;
-       YPa[Ym2] = 0.1;
-       YPa[Yp1] = 200;
-       YPa[Yp2] = 200;
 
-       XOffset = 70;
-       YOffset = 140;
+       XPa[Xp1] = 435-55;
+       YPa[Ym2] = 0.1;
+
+       XPa[Xm2] = 0.1;
+       YPa[Yp1] = 200;
+
+       XPa[Xp2] = 330;
+       YPa[Yp2] = 210;
+
+       XOffset = 55;
+       YOffset = 65;
        
        
      }
 
+ else if (NBox == 7){ //data from W3
 
+  MaxDim  = 500;
+  for(a=1;a<16;a++){
+    XPa[a] = 0.;
+    YPa[a] = 0;
+   }
+          // new data
+   //dcchannel - 0
+
+
+   //  76    
+   //  58
+
+       
+   TDelay[5] = 5.368045802007208;
+   TDelay[6] = 6.1343113172713055;
+   TDelay[7] = 6.5569328201007;
+   TDelay[8] = 6.227506611961163;
+   
+   Xm1 = 6;
+   Ym1 = 6;
+ 
+   Xm2 = 5;
+   Yp1 = 5;
+
+   Xp1 = 7;
+   Ym2 = 7;
+
+   Xp2 = 8;
+   Yp2 = 8;
+
+       
+       
+
+   DCTimeLow = 22;
+   DCTimeHigh = 60;
+
+   XPa[Xm1] = 0.1;
+   YPa[Ym1] = 0.1;
+
+   XPa[Xm2] = 0.1;
+   YPa[Yp1] = 200;
+
+   XPa[Xp1] = 435 - 55;
+   YPa[Ym2] = 0.1;
+
+   XPa[Xp2] = 435 - 55;
+   YPa[Yp2] = 200;
+
+   XOffset = 55;
+   YOffset = 65;
+
+
+   const int indexes_pads[4] = {5,6,7,8};
+       
+  } // ends W3 data 
 
 
   for(a=0;a<16;a++)
     {
       if (XPa[a]!=0)  XPa[a] +=XOffset;
-      if (YPa[a]!=0) YPa[a] +=YOffset;
+      if (YPa[a]!=0)  YPa[a] +=YOffset;
       if (YPa[a]!=0)
 	cout << "Pad " << a << " is in " << XPa[a]<<","<<YPa[a] << endl;
     }
@@ -294,13 +347,13 @@ void RSD2_Digitizer_boxes15::Begin(TTree * /*tree*/)
    
    
    
-   sprintf(Filedatacorr,"Digitizer/Analysis_root/Croci_200x300micron/Migration_xCor%3.2f_yCor%3.2f_NBox%d_UseArea%d_Mean%d_Cross045.txt", kxfactor,kyfactor,NBox, UseArea, UseWeightedMean); //Data
+   sprintf(Filedatacorr,"Migration_xCor%3.2f_yCor%3.2f_NBox%d_UseArea%d_Mean%d_boxes.txt", kxfactor,kyfactor,NBox, UseArea, UseWeightedMean); //Data
    sprintf(FileSpicecorr,"LSPICE_correction/1node/ampcut0mV/table_crosses_0.75k_18.86fF.txt"); //best with 18.86
    //   sprintf(FileSpicecorr,"LSPICE_correction/3node/ampcut0mV/table_crosses_1.0k_2.26fF.txt"); //best with 2.26
    //  sprintf(FileSpicecorr,"LSPICE_correction/1node/ampcut0mV/table_crosses_2.0k_1.29fF.txt"); //best with 1.29
-   sprintf(NormFiledatacorr,"Digitizer/Analysis_root/Croci_200x300micron/Norm_Migration_xCor%3.2f_yCor%3.2f_NBox%d_Cross045.txt",kxfactor,kyfactor,NBox ); //Data
-   sprintf(FileSpicecorr,"Digitizer/Analysis_root/Croci_200x300micron/Norm_Migration_xCor%3.2f_yCor%3.2f_NBox%d_Cross045.txt",kxfactor,kyfactor,NBox ); //Data
-   sprintf(FileSpicecorr,"Digitizer/Analysis_root/Croci_200x300micron/Norm_Migration_xCor%3.2f_yCor%3.2f_NBox%d_Cross045.txt",kxfactor,kyfactor,1 ); //Data
+   sprintf(NormFiledatacorr,"Digitizer/Analysis_root/Croci_200x300micron/Norm_Migration_xCor%3.2f_yCor%3.2f_NBox%d_boxes.txt",kxfactor,kyfactor,NBox ); //Data
+   sprintf(FileSpicecorr,"Digitizer/Analysis_root/Croci_200x300micron/Norm_Migration_xCor%3.2f_yCor%3.2f_NBox%d_boxes.txt",kxfactor,kyfactor,NBox ); //Data
+   sprintf(FileSpicecorr,"Digitizer/Analysis_root/Croci_200x300micron/Norm_Migration_xCor%3.2f_yCor%3.2f_NBox%d_boxes.txt",kxfactor,kyfactor,1 ); //Data
    
 
   
@@ -386,33 +439,30 @@ void RSD2_Digitizer_boxes15::Begin(TTree * /*tree*/)
        LaserPointInside[a] = 0;
      }
 
-   if( Correction == 1 || Correction == 2 )
-     {
+   if( Correction == 1 || Correction == 2 ){
        
-       ifstream inputFile2 (FileSpicecorr);
-       if(!inputFile2)
-	 {
-	   cout << "Error: could not find the LTSPICE file " <<  FileSpicecorr << endl;
-	 }
-       else
-	 {
+      ifstream inputFile2 (FileSpicecorr);
+      if(!inputFile2){
+	       cout << "Error: could not find the LTSPICE file " <<  FileSpicecorr << endl;
+	     }
+   else{
 	   res = 0;
 	   cout << "LTSPICE file = " << FileSpicecorr << endl;
 	   //   inputFile2 >> pippo >> pippo >> pippo  >> pippo;
 	   
-	   while(1) //upper limit for safety
+	   while(1){ //upper limit for safety
 	     //	      while(1)
-	     {		  
-	       if(inputFile2.eof())
-		 break;		 	   
+	     		  
+	       if(inputFile2.eof()) break;		 	   
 	       inputFile2 >> x_true[res] >>y_true[res] >>	x_rec[res]  >> y_rec[res];
 
 	
 	       if (y_true[res]>YPa[Ym1]+Distance_Axis_train && y_true[res]<YPa[Yp1]-Distance_Axis_train &&
-		   x_true[res] > XPa[Xm1]+Distance_Axis_train && x_true[res] <XPa[Xp1]-Distance_Axis_train)  DataCorPointInside[res] = 1;
+		         x_true[res] > XPa[Xm1]+Distance_Axis_train && x_true[res] <XPa[Xp1]-Distance_Axis_train)
+                DataCorPointInside[res] = 1;
 
 	       res++;
-	     }
+	    }
 	   
 	   sim_point = res--;
 	   
@@ -421,67 +471,60 @@ void RSD2_Digitizer_boxes15::Begin(TTree * /*tree*/)
 	   Xo = 1;
 	   Yo = 1;
 
-	   if (NBox == 0)
-	     {
+	   if (NBox == 0){
 	       Dx = 510;
 	       Dy = 500;
 	       Yo = YPa[6];
 	       Xo = XPa[6];	       
-	     }
-	   else if (NBox == 1 || NBox ==5)
-	     {
+	    }
+	   else if (NBox == 1 || NBox ==5){
 	       Dx = 340;
 	       Dy = 200;
 	       Yo = YPa[Ym1];
 	       Xo = XPa[Xm1];	       
-	     }
-	   else if (NBox == 2)
-	     {
+	    }
+	   else if (NBox == 2){
 	       Dx = 340;
 	       Dy = 200;
 	       Yo = YPa[5];
 	       Xo = XPa[5];
      
-	     }
-	   else if (NBox == 3)
-	     {
+	    }
+	   else if (NBox == 3){
 	       Dx = 340;
 	       Dy = 400;
 	       Yo = YPa[3];
 	       Xo = XPa[3];	       
-	     }
+	    }
 
 	  
-	   if (NBox ==0 || NBox == 1 || NBox ==2 || NBox == 3 || NBox ==5 )
+	   if (NBox ==0 || NBox == 1 || NBox ==2 || NBox == 3 || NBox ==5 || NBox == 7)
 	     for (cc = 0; cc<sim_point;cc++) // LTSpice corr.  
 	       {
-		 x_true[cc]=(x_true[cc]+1)/2*Dx+Xo;
-		 y_true[cc]=(y_true[cc]+1)/2*Dy+Yo;
-		 x_rec[cc]=(x_rec[cc]+1)/2*Dx+Xo;
-		 y_rec[cc]=(y_rec[cc]+1)/2*Dy+Yo;			
-		 if (x_true[cc]  == 0.0) cout <<  y_true[cc] << " " << y_rec[cc] << endl;		       
+		        x_true[cc]=(x_true[cc]+1)/2*Dx+Xo;
+		        y_true[cc]=(y_true[cc]+1)/2*Dy+Yo;
+		        x_rec[cc]=(x_rec[cc]+1)/2*Dx+Xo;
+		        y_rec[cc]=(y_rec[cc]+1)/2*Dy+Yo;			
+		        if (x_true[cc]  == 0.0) cout <<  y_true[cc] << " " << y_rec[cc] << endl;		       
 	       }
-	 }
+	  } 
 
-     }
-   else if (Correction== 11 || Correction == 12 )
-     {
-       ifstream inputFile2 (Filedatacorr);
-       if(!inputFile2)
-	 {
-	   cout << "Error: could not find the Data file = "  << Filedatacorr  << endl;
-	 }
-       else
-	 {
-	   res = 0;
-	   cout << "Data file = " << Filedatacorr << endl;
-	   //   inputFile2 >> pippo >> pippo >> pippo  >> pippo;
+   } // ends if ( Correction != 1,2)
+
+   else if (Correction== 11 || Correction == 12 ){
+     
+    ifstream inputFile2 (Filedatacorr);
+    if(!inputFile2)  cout << "Error: could not find the Data file = "  << Filedatacorr  << endl;
+    else{
+	     res = 0;
+	     cout << "Data file = " << Filedatacorr << endl;
+	     //   inputFile2 >> pippo >> pippo >> pippo  >> pippo;
 	   
-	   while(1) //upper limit for safety
+	     while(1) {//upper limit for safety
 	     //	      while(1)
-	     {		  
+	   		  
 	       if(inputFile2.eof() || res>9000)
-		 break;		 	   
+		        break;		 	   
 	       inputFile2 >> x_true[res] >>y_true[res] >> x_rec[res]  >> y_rec[res] >> t_rec[res]; ;
 	       //  if (x_rec[res] <1) cout << " Empty rec point = " << res << " at " <<  x_true[res] << " , " << y_true[res] << endl;
 
@@ -496,37 +539,34 @@ void RSD2_Digitizer_boxes15::Begin(TTree * /*tree*/)
 	       // y_rec[res] = yrr+ycent;
 
 	       
-	       if (y_true[res]>YPa[Ym1]+Distance_Axis_train && y_true[res]<YPa[Yp1]-Distance_Axis_train &&
-		   x_true[res] > XPa[Xm1]+Distance_Axis_train && x_true[res] <XPa[Xp1]-Distance_Axis_train)
-		 {
-		   DataCorPointInside[res] = 1;
-		   //   cout << "Point inside = " << res << " x,y = " << x_true[res] << " " << y_true[res] << endl;
-		   pinside++;
-		  
+	     if (y_true[res]>YPa[Ym1]+Distance_Axis_train && y_true[res]<YPa[Yp1]-Distance_Axis_train &&
+		       x_true[res] > XPa[Xm1]+Distance_Axis_train && x_true[res] <XPa[Xp1]-Distance_Axis_train) {
+		
+		        DataCorPointInside[res] = 1;
+		        //   cout << "Point inside = " << res << " x,y = " << x_true[res] << " " << y_true[res] << endl;
+		        pinside++;
+		    }
 
-		     }
+	     if (DataCorPointInside[res]){
+		      XYSignalTime->SetBinContent(XYSignalTime->GetXaxis()->FindBin(x_true[res]),
+			    XYSignalTime->GetYaxis()->FindBin(y_true[res]),t_rec[res]+1);
+		      XYDelay->SetBinContent(XYDelay->GetXaxis()->FindBin(x_true[res]),XYDelay->GetYaxis()->FindBin(y_true[res]),t_rec[res]+1);
+		    }
 
-	       if (DataCorPointInside[res])
-		 {
-		   XYSignalTime->SetBinContent(XYSignalTime->GetXaxis()->FindBin(x_true[res]),
-					       XYSignalTime->GetYaxis()->FindBin(y_true[res]),t_rec[res]+1);
-		   XYDelay->SetBinContent(XYDelay->GetXaxis()->FindBin(x_true[res]),XYDelay->GetYaxis()->FindBin(y_true[res]),t_rec[res]+1);
-		 }
-
-	       res++;
+	     res++;
 
 	       
 	       
-	     }
+	    } //while
 	 	   
 	   res--;
 	   sim_point = res;
 		  
 	   
-	 }
+	 } //else
 
-     }
-   cout << " Correction files with " << sim_point << " points, inside = " << pinside << endl;	   
+  } //  if correction == 11, 12
+  cout << " Correction files with " << sim_point << " points, inside = " << pinside << endl;	   
 
 
 }
@@ -604,17 +644,15 @@ Bool_t RSD2_Digitizer_boxes15::Process(Long64_t entry)
     YLaser = *YPos;
     // Design the True points
 
-   if (XLaser>XCent-40 && XLaser<XCent+40 && YLaser>YCent-40 && YLaser<YCent+40)
-     {
-       for (b=0;b<samples[0]-10;b++)
-	 {
+   if (XLaser>XCent-40 && XLaser<XCent+40 && YLaser>YCent-40 && YLaser<YCent+40){
+    for (b=0;b<samples[0]-10;b++){
 	   if (NBox == 6)
 	     PShapeDCCh->Fill(time[b],m_amp2[b]); // 1000 point = 50 ns
 	   else
 	     PShapeDCCh->Fill(time[b],m_amp0[b]); // 1000 point = 50 ns
 	   
-	 }
-     }
+	  }
+   }
    
     
     if (*npos !=nposold)
@@ -677,7 +715,7 @@ Bool_t RSD2_Digitizer_boxes15::Process(Long64_t entry)
 
     NChMax = 0;
     AMax = 0;
-    for (int a = 2; a<*nchro;a++) // bins = 20 um
+    for (int a = 2; a<*nchro;a++) // bins = 20 um // maybe 10 for W3, ie run 26 and Nbox = 7
       {
 	//	if ((a ==1 || a == 3 || a ==5 || a ==12 ) && Inside1[*npos])
 	ChanRec = 0;
@@ -687,12 +725,13 @@ Bool_t RSD2_Digitizer_boxes15::Process(Long64_t entry)
 	if (NBox == 4 && (a ==3 || a == 7)) ChanRec=1;
 	if (NBox == 5 && ( (a > 2 &&  a< 7) )) ChanRec=1;
 	if (NBox == 6 && ( a > 4 && a<9  )) ChanRec=1;
+  if (Nbox == 7 && ( a >= 5 && a <=8  )) ChanRec=1;
 	Signal[a] = 0;
 
 
 
 	
-	if(ChanRec) AllSignalTotal +=  (ampl[a]*AScale +distN(generator))*ADCmV;
+	if(ChanRec) AllSignalTotal +=  (ampl[a]*AScale + distN(generator))*ADCmV;
 
 	// Position reconstruction from amplitude weighted position
 	if(ChanRec && LaserPointInside[*npos])

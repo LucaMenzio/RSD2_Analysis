@@ -10,8 +10,8 @@ ROOT.EnableThreadSafety()
 ROOT.EnableImplicitMT(8)
 renamefile = False
 
-nHists  = 6
-step    = 20
+nHists  = 16
+step    = 10
 maxdimx = 1500
 maxdimy = 1500
 fHist     = []
