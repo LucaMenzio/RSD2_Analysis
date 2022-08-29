@@ -111,7 +111,7 @@ public :
    Double_t SignalTotal = 1;
    Double_t Signal[20];
 
-   Double_t Tcor12,Tcor14, TTrigger; 
+   Double_t Tcor2, Tcor10,Tcor12,Tcor14, TTrigger; 
    Double_t XLaser = 0;
    Double_t YLaser= 0;
    Double_t ExpCor= 0;

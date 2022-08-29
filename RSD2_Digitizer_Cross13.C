@@ -224,13 +224,18 @@ void RSD2_Digitizer_Cross13::Begin(TTree * /*tree*/)
       YPa[Yp1] = 1310;
       YPa[Yp2] = 1310;
 
-      DCTimeLow  = 10;
-      DCTimeHigh = 60;
+      DCTimeLow  = 15;
+      DCTimeHigh = 100;
 
       TDelay[1] = 5.557302422353908;
       TDelay[2] = 5.412929484946022;
       TDelay[3] = 5.888555319756881;
       TDelay[4] = 5.461670658289696;
+
+      //TDelay[1] = 0.;
+      //TDelay[2] = 0.;
+      //TDelay[3] = 0.;
+      //TDelay[4] = 0.;
 
  
    }
@@ -289,7 +294,7 @@ void RSD2_Digitizer_Cross13::Begin(TTree * /*tree*/)
   XYRec = new TH2F ("XYRec",histname,nbin,0.,MaxDim,nbin, 0.,MaxDim);
 
   sprintf(histname,"DC shape;Time [ns]; Amplitude [mV] ");       
-  PShapeDCCh = new TProfile("PShaperDCCh",histname, 300, 0, 60.);
+  PShapeDCCh = new TProfile("PShaperDCCh",histname, 750, 0, 150.);
 
 
   sprintf(histname,"Xm1 shape;Time [ns]; Amplitude [mV] ");       
@@ -533,8 +538,9 @@ Bool_t RSD2_Digitizer_Cross13::Process(Long64_t entry)
 	   }
    }
 
-   if (XLaser>XCent-225 && XLaser<XCent-175 && YLaser>YCent-325 && YLaser<YCent-275)
-     {
+  // if (XLaser>XCent-225 && XLaser<XCent-175 && YLaser>YCent-325 && YLaser<YCent-275)
+    if(XLaser>XCent-40 && XLaser<XCent+40 && YLaser>YCent-40 && YLaser<YCent+40)
+         {
        for (b=0;b<samples[0]-10;b++)
 	 {
 	   PShapeXm1->Fill(time[b]-t_max[0]+30,m_amp4[b]); 

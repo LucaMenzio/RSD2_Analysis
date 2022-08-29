@@ -118,8 +118,8 @@ void RSD2_Digitizer_Cross45::Begin(TTree * /*tree*/)
        MinDim  = 0;
        
 
-       DCTimeLow = 30;
-       DCTimeHigh = 50;
+       DCTimeLow = 20;
+       DCTimeHigh = 100;
      }
 
    else if (datataking ==2){
@@ -183,15 +183,17 @@ void RSD2_Digitizer_Cross45::Begin(TTree * /*tree*/)
        }
 
 
-       TDelay[12] = 0.409;
-       TDelay[14] = 0.388;
+       TDelay[2] = 5.657768286139561;
+       TDelay[5] = 5.8349734994484646;
+       TDelay[10] = 5.916778348798859;
+       TDelay[13] = 6.273456340292286;
        
        MaxDim  = 1100;
        MinDim  = 0;
        
 
-       DCTimeLow = 30;
-       DCTimeHigh = 50;
+       DCTimeLow = 20;
+       DCTimeHigh = 100;
      }
        
     nbin = (MaxDim-MinDim)/5;
@@ -240,7 +242,7 @@ void RSD2_Digitizer_Cross45::Begin(TTree * /*tree*/)
    XYRec = new TH2F ("XYRec",histname,nbin,MinDim,MaxDim,nbin, MinDim,MaxDim);
 
    sprintf(histname,"DC shape;Time [ns]; Amplitude [mV] ");       
-   PShapeDCCh = new TProfile("PShaperDCCh",histname, 300, 0, 60.);
+   PShapeDCCh = new TProfile("PShaperDCCh",histname, 750, 0, 150.);
 
    for (int b=0;b<8000;b++)
      {
@@ -437,7 +439,7 @@ Bool_t RSD2_Digitizer_Cross45::Process(Long64_t entry)
 
    if (XLaser>XCent-40 && XLaser<XCent+40 && YLaser>YCent-40 && YLaser<YCent+40){
       for (b=0;b<samples[0]-10;b++){
-       if (dcchannel ==0)  PShapeDCCh->Fill(time[b],-m_amp0[b]); // 1000 point = 50 ns
+       if (dcchannel ==0)  PShapeDCCh->Fill(time[b],m_amp0[b]); // 1000 point = 50 ns
        else if  (dcchannel ==2)  PShapeDCCh->Fill(time[b],-m_amp2[b]); // 1000 point = 50 ns
     }
    }
@@ -462,13 +464,29 @@ Bool_t RSD2_Digitizer_Cross45::Process(Long64_t entry)
 
 
    ASum = 0;
-   //   if (XLaser<50 && YLaser>200 && YLaser<300){
-   for (int a = 0; a<n_integral_DC;a++){
-    if (time[a]>20 && time[a]<60)
-      ASum +=m_amp0[a];
-      //ASum += m_amp0[a]+m_amp1[a]+m_amp12[a]+m_amp3[a]+m_amp14[a];
-    }
-   ASum *= (time[10]-time[9])*ADCmV*AScale;
+   if (LaserPointInside[*npos])
+     {
+
+        //   if (XLaser<50 && YLaser>200 && YLaser<300){
+        //cout << "New event\t" << ampl[0] << "\t" << t_max[0] << endl;
+        for (int a = 0; a<n_integral_DC;a++){
+            //cout << m_amp0[a]  << " " << a  << " " << time[a] <<endl;
+         //if (time[a]>0 && time[a]<60)
+           ASum +=m_amp0[a];
+           /*
+           if(time[a] > t_max[2] -1 && time[a] >    t_max[2] +2)
+            ASum += m_amp2[a];
+            if(time[a] > t_max[5] -1 && time[a] >   t_max[5] +2)
+             ASum += m_amp5[a];
+            if(time[a] > t_max[10] -1 && time[a] >  t_max[10] +2)
+             ASum += m_amp10[a];
+            if(time[a] > t_max[13] -1 && time[a] >  t_max[13] +2)
+             ASum += m_amp13[a];
+        */
+         }
+        ASum *= (time[10]-time[9])*ADCmV*AScale;
+
+   }
    //    HDCSignal->Fill(area[dcchannel]*ADCmV*AScale);
    //}
    // Pos. Reconstruction
@@ -519,17 +537,13 @@ Bool_t RSD2_Digitizer_Cross45::Process(Long64_t entry)
        NChMax = a;
      }
          Signal[a] = 0;
-         if (a == Xm1 || a == Xm2 || a == Xp1 || a ==Xp2 )
-     {
-       //  if ( ampl[Xm1]*AScale>10)     
-         {           
+         if (a == Xm1 || a == Xm2 || a == Xp1 || a ==Xp2 ){
+       //  if ( ampl[Xm1]*AScale>10)             
            Signal[a] = (ampl[a]*AScale +distN(generator))*ADCmV; // From TDC to mV    
-           if (Signal[a]<-3)
-       {
-         Signal[a] = 0;
-       }
+           if (Signal[a]<-3){
+                Signal[a] = 0;
+            }
            SignalTotal += Signal[a];      
-         }
      }
        }
    }
@@ -626,22 +640,22 @@ Bool_t RSD2_Digitizer_Cross45::Process(Long64_t entry)
       ymin +=  cor_y;
     }
 
-  Tcor12 = 0;
-  Tcor14 = 0;
-  TChannel[12]=0;
-  TChannel[14]=0;
+  Tcor2 = 0;
+  Tcor10 = 0;
+  TChannel[2]=0;
+  TChannel[10]=0;
   
         if (Correction ==11 || Correction ==12)
     {
-      Tcor12 =  XYSignalTime->GetBinContent(XYSignalTime->GetXaxis()->FindBin(x_true[*npos]), XYSignalTime->GetYaxis()->FindBin(y_true[*npos]))-1.;
-      Tcor14 =  XYSignalTime->GetBinContent(XYSignalTime->GetXaxis()->FindBin(XPa[Xp2]-(x_true[*npos]-XPa[Xm1])), XYSignalTime->GetYaxis()->FindBin(y_true[*npos]))-1.;
+      Tcor2 =  XYSignalTime->GetBinContent(XYSignalTime->GetXaxis()->FindBin(x_true[*npos]), XYSignalTime->GetYaxis()->FindBin(y_true[*npos]))-1.;
+      Tcor10 =  XYSignalTime->GetBinContent(XYSignalTime->GetXaxis()->FindBin(XPa[Xp2]-(x_true[*npos]-XPa[Xm1])), XYSignalTime->GetYaxis()->FindBin(y_true[*npos]))-1.;
     }
 
-   TChannel[14] =  t_max[14]+TDelay[14]+Tcor14;
-   TChannel[12] =  t_max[12]+TDelay[12]+Tcor12;
+   TChannel[10] =  t_max[10]+TDelay[10]+Tcor10;
+   TChannel[2] =  t_max[2]+TDelay[2]+Tcor12;
 
-   if ( fabs(TChannel[12]-TChannel[NChMax])>0.5) TChannel[12] = 0;// t_max[12]+TDelay[12]+Tcor12;
-   if ( fabs(TChannel[14]-TChannel[NChMax])>0.5) TChannel[14] = 0;  t_max[14]+TDelay[14]+Tcor14;
+   if ( fabs(TChannel[2]-TChannel[NChMax])>0.5) TChannel[2] = 0;// t_max[12]+TDelay[12]+Tcor12;
+   if ( fabs(TChannel[10]-TChannel[NChMax])>0.5) TChannel[10] = 0;  t_max[10]+TDelay[10]+Tcor14;
 
   TTrigger     = t_max[17];
        // XYSignal->SetBinContent(XYPads->GetXaxis()->FindBin(XLaser),XYPads->GetYaxis()->FindBin(YLaser),SignalTotal);
@@ -657,8 +671,8 @@ Bool_t RSD2_Digitizer_Cross45::Process(Long64_t entry)
      // if(  xmin> XCent && ymin>YCent)
      //    if(xmin> XCent-50 &&  xmin< XCent+50 && ymin>YCent)
        {
-         EventTime = TTrigger-(TChannel[14]*ampl[14]+TChannel[12]*ampl[12])/(ampl[14]+ampl[12]);
-         EventTime =TTrigger-TChannel[12];
+         EventTime = TTrigger-(TChannel[10]*ampl[10]+TChannel[2]*ampl[2])/(ampl[10]+ampl[2]);
+         EventTime =TTrigger-TChannel[2];
          //  EventTime =TChannel[12]-TChannel[14];
          HTime->Fill(EventTime);
          if( EventTime>-1 && EventTime <1 )
@@ -691,7 +705,9 @@ Bool_t RSD2_Digitizer_Cross45::Process(Long64_t entry)
 
 
    if (fabs(ASum) >0)
-     XYDCArea->SetBinContent(XYDCArea->GetXaxis()->FindBin(XLaser),XYDCArea->GetYaxis()->FindBin(YLaser),fabs(ASum/5.));
+     
+     //XYDCArea->SetBinContent(XYDCArea->GetXaxis()->FindBin(XLaser),XYDCArea->GetYaxis()->FindBin(YLaser),fabs(ASum/5.));
+     XYDCArea->SetBinContent(XYDCArea->GetXaxis()->FindBin(XLaser),XYDCArea->GetYaxis()->FindBin(YLaser),(ASum/5.));
 
    return kTRUE;
 }
@@ -840,7 +856,7 @@ void RSD2_Digitizer_Cross45::Terminate()
 
 
   c4->cd(3); 
-     XYPads->SetStats(0);
+   XYPads->SetStats(0);
    XYDCArea->SetStats(0);
    XYDCArea->SetTitle("");
    XYDCArea->Draw("colz");
@@ -1009,11 +1025,6 @@ void RSD2_Digitizer_Cross45::Terminate()
   c7->cd(1);
   exp2 = new TF1("exp2","exp([0]+x*[1])",0,1000);
   PShapeDCCh->Draw();
-  if ( PShapeDCCh->GetEntries()>1000)
-    {
-      PShapeDCCh->Fit("exp2","Q","",DCTimeLow+5,DCTimeHigh+10);
-      cout<< left << setw(20) << "RC = " <<setprecision(3) << 1./PShapeDCCh->GetFunction("exp2")->GetParameter(1) << " [ns]" << endl;
-    }
 
   c7->cd(2);
 
@@ -1062,7 +1073,13 @@ void RSD2_Digitizer_Cross45::Terminate()
   cout << "Mean Migration = " << HMigration->GetMean()<<" [um]" << endl;
   cout << "Area = " <<  HDCSignal->GetFunction("gaus")->GetParameter(1) << " [fC], gain =  " << HDCSignal->GetFunction("gaus")->GetParameter(1)*2. << endl;  
 
-  
+  cout << "DC integral using the Tprofile: " << PShapeDCCh->Integral(0,500)*(time[10]-time[9])*ADCmV*AScale /5. << " fc"<< endl;
+
+  if ( PShapeDCCh->GetEntries()>1000)
+  {
+    PShapeDCCh->Fit("exp2","Q","",DCTimeLow+5,DCTimeHigh+10);
+    cout<< left << setw(20) << "RC = " <<setprecision(3) << 1./PShapeDCCh->GetFunction("exp2")->GetParameter(1) << " [ns]" << endl;
+  }
 }
 
 
@@ -1303,7 +1320,7 @@ void RSD2_Digitizer_Cross45::Terminate2()
   cout << "Central position of box (x,y) = " << (XPa[Xp1]+XPa[Xm1])/2<<","<<(YPa[Yp1]+YPa[Ym1])/2 << endl;
   cout << "Mean position of data (x,y) = " << HXAllAbsPos->GetMean()<<","<<HYAllAbsPos->GetMean() << endl;
   
-
+  
 
 
 }
