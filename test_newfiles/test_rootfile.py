@@ -25,7 +25,7 @@ if len(sys.argv) == 3:
         filename = sys.argv[1]
         renamefile = sys.argv[2]
 myFile = TFile.Open(filename, "OPEN")
-tree = myFile.Get("Analysis")
+tree   = myFile.Get("Analysis")
 
 nEntries = tree.GetEntries()
 for j in range(nHists):

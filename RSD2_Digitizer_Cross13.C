@@ -72,7 +72,7 @@ void RSD2_Digitizer_Cross13::Begin(TTree * /*tree*/)
    UseWeightedMean = 0;
    UseRotation = 0;
    SquareCut = 0; // 0 no cut, ==10 rotated cut, 1 +-250; 2 =250- 500; 3 = 500-750;
-   Rangle = 0* PI / 180.0;  // angle of rotation of training data
+   Rangle = 180.* PI / 180.0;  // angle of rotation of training data
    RMSNoise = 4.439 ; // In ADC count
    Radius = 30; //30;
    n_integral_DC = 1000;

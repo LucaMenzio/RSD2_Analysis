@@ -50,15 +50,15 @@ void RSD2_Digitizer_boxes15::Begin(TTree * /*tree*/)
       = 12 show correction Data without using it;
    */
 
-   Correction = 0;
+   Correction = 11;
 
-   RunNumber = 300; // == 0 for run 30,31,32,33,34,35,37,38. Put bias for run 36 (225, 250, 275,300,330)
+   RunNumber = 0; // == 0 for run 30,31,32,33,34,35,37,38. Put bias for run 36 (225, 250, 275,300,330)
 
                         
    ExpCor = 2; // 
 
-   kxfactor = 0.7; // best = 0.93
-   kyfactor = 0.5;  // best = 0.58
+   kxfactor = 1; // best = 0.93
+   kyfactor = 1;  // best = 0.58
    Distance_Axis_data = Xarmwidth+20;
    Distance_Axis_train = Xarmwidth+10; 
    
@@ -305,8 +305,8 @@ void RSD2_Digitizer_boxes15::Begin(TTree * /*tree*/)
        
        
 
-   DCTimeLow = 22;
-   DCTimeHigh = 60;
+   DCTimeLow = 8;
+   DCTimeHigh = 30;
 
    XPa[Xm1] = 0.1;
    YPa[Ym1] = 0.1;
@@ -388,7 +388,7 @@ void RSD2_Digitizer_boxes15::Begin(TTree * /*tree*/)
    XYDCArea = new TH2F ("XYDCArea",histname,nbin,0,MaxDim,nbin, 0,MaxDim);
 
    sprintf(histname,"DC shape;Time [ns]; Amplitude [mV] ");       
-   PShapeDCCh = new TProfile("PShaperDCCh",histname, 300, 0, 60.);
+   PShapeDCCh = new TProfile("PShaperDCCh",histname, 750, 0, 100.);
    
    for (int b=0;b<9000;b++)
      {
@@ -414,7 +414,7 @@ void RSD2_Digitizer_boxes15::Begin(TTree * /*tree*/)
   sprintf(histname,"; Signal Total [mV] ;Entries");       
    HSignalTotal = new TH1F ("HSignalTotal",histname,100, 0, 350. );
    sprintf(histname,"; DC Signal  [pWb] ;Entries");       
-   HDCSignal = new TH1F ("HDCSignal",histname,100, 0, 350. );
+   HDCSignal = new TH1F ("HDCSignal",histname,100, 0, 450. );
 
     
    sprintf(histname,"; # point in migration ;Entries");       
@@ -605,7 +605,7 @@ Bool_t RSD2_Digitizer_boxes15::Process(Long64_t entry)
    fReader.SetLocalEntry(entry);
 
    
-   if ( RunNumber == *nrun  || RunNumber ==0  )
+   if ( RunNumber == *nrun  || RunNumber == 0  )
      {
 
 
@@ -704,7 +704,7 @@ Bool_t RSD2_Digitizer_boxes15::Process(Long64_t entry)
 
     
     if (LaserPointInside[*npos])
-      HDCSignal->Fill(fabs(ASum));
+      HDCSignal->Fill((ASum/5.));
     
     // Pos. Reconstruction
     XNum = 0;
@@ -725,7 +725,7 @@ Bool_t RSD2_Digitizer_boxes15::Process(Long64_t entry)
 	if (NBox == 4 && (a ==3 || a == 7)) ChanRec=1;
 	if (NBox == 5 && ( (a > 2 &&  a< 7) )) ChanRec=1;
 	if (NBox == 6 && ( a > 4 && a<9  )) ChanRec=1;
-  if (Nbox == 7 && ( a >= 5 && a <=8  )) ChanRec=1;
+  if (NBox == 7 && ( a >= 5 && a <=8  )) ChanRec=1;
 	Signal[a] = 0;
 
 
@@ -1337,7 +1337,7 @@ void RSD2_Digitizer_boxes15::Terminate()
   cout << "Central position of box (x,y) = " << (XPa[Xp1]+XPa[Xm1])/2<<","<<(YPa[Yp1]+YPa[Ym1])/2 << endl;
   cout << "Mean position of data (x,y) = " << HXAllAbsPos->GetMean()<<","<<HYAllAbsPos->GetMean() << endl;
   
-  cout << "Area = " <<  HDCSignal->GetFunction("gaus")->GetParameter(1) << " [pWb], gain =  " << HDCSignal->GetFunction("gaus")->GetParameter(1)/5.*2. << endl;  
+  cout << "Area = " <<  HDCSignal->GetFunction("gaus")->GetParameter(1) << " [pWb], gain =  " << HDCSignal->GetFunction("gaus")->GetParameter(1)*2. << endl;  
   cout << "Sum of 4 amplitudes = " <<  HSignalTotal->GetFunction("gaus")->GetParameter(1) << endl;    
 
   
